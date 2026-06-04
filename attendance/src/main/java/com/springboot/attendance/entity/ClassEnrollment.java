@@ -22,8 +22,8 @@ public class ClassEnrollment {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "class_id", nullable = false)
-    private Class aClass;
-
+    private Class classEntity;
+    
     @CreationTimestamp
     @Column(name = "enrolled_at", nullable = false, updatable = false)
     private OffsetDateTime enrolledAt;
