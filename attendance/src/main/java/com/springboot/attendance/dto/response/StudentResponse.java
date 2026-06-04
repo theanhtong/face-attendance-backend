@@ -10,6 +10,9 @@ import java.util.UUID;
 public class StudentResponse {
     private UUID id;
     private String researchId;
+    private String fullName;
+    private String studentCode;
+    private String email;
     private boolean isActive;
     private OffsetDateTime enrolledAt;
 }

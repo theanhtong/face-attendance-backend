@@ -16,6 +16,15 @@ public class Student {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    @Column(name = "full_name", length = 100)
+    private String fullName;
+
+    @Column(name = "student_code", unique = true, length = 20)
+    private String studentCode;
+    
+    @Column(length = 100)
+    private String email;
+
     @Column(name = "research_id", unique = true, nullable = false, length = 20)
     private String researchId;
 

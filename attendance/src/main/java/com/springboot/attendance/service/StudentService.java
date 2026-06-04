@@ -41,6 +41,9 @@ public class StudentService {
 
         return toResponse(studentRepository.save(Student.builder()
                 .researchId(req.getResearchId())
+                .fullName(req.getFullName())
+                .studentCode(req.getStudentCode())
+                .email(req.getEmail())
                 .build()));
     }
 
@@ -48,6 +51,9 @@ public class StudentService {
     public StudentResponse update(UUID id, StudentRequest req) {
         var entity = findOrThrow(id);
         entity.setResearchId(req.getResearchId());
+        entity.setFullName(req.getFullName());
+        entity.setStudentCode(req.getStudentCode());
+        entity.setEmail(req.getEmail());
         return toResponse(studentRepository.save(entity));
     }
 
@@ -67,6 +73,9 @@ public class StudentService {
         return StudentResponse.builder()
                 .id(s.getId())
                 .researchId(s.getResearchId())
+                .fullName(s.getFullName())
+                .studentCode(s.getStudentCode())
+                .email(s.getEmail())
                 .isActive(s.isActive())
                 .enrolledAt(s.getEnrolledAt())
                 .build();
