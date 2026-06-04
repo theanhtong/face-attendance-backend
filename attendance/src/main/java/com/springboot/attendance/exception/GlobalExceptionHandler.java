@@ -7,6 +7,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import jakarta.persistence.EntityNotFoundException;
+
 import java.time.OffsetDateTime;
 import java.util.Map;
 
@@ -29,8 +31,21 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<?> handleGeneral(Exception e) {
+        e.printStackTrace();
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(errorBody("Internal server error", HttpStatus.INTERNAL_SERVER_ERROR));
+    }
+
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<?> handleNotFound(EntityNotFoundException e) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(errorBody(e.getMessage(), HttpStatus.NOT_FOUND));
+    }
+    
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<?> handleIllegalArg(IllegalArgumentException e) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(errorBody(e.getMessage(), HttpStatus.CONFLICT));
     }
 
     private Map<String, Object> errorBody(String message, HttpStatus status) {
