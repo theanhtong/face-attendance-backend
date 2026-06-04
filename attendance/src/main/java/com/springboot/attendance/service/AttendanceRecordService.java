@@ -1,0 +1,110 @@
+package com.springboot.attendance.service;
+
+import com.springboot.attendance.dto.request.AttendanceOverrideRequest;
+import com.springboot.attendance.dto.request.AttendanceRecordRequest;
+import com.springboot.attendance.dto.response.AttendanceRecordResponse;
+import com.springboot.attendance.entity.AttendanceRecord;
+import com.springboot.attendance.entity.AttendanceStatus;
+import com.springboot.attendance.repository.AttendanceRecordRepository;
+import com.springboot.attendance.repository.ClassSessionRepository;
+import com.springboot.attendance.repository.StudentRepository;
+import com.springboot.attendance.repository.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.UUID;
+
+@Service
+@RequiredArgsConstructor
+public class AttendanceRecordService {
+
+    private final AttendanceRecordRepository attendanceRepository;
+    private final ClassSessionRepository sessionRepository;
+    private final StudentRepository studentRepository;
+    private final UserRepository userRepository;
+
+    @Transactional(readOnly = true)
+    public List<AttendanceRecordResponse> getBySession(UUID sessionId) {
+        return attendanceRepository.findBySessionId(sessionId)
+                .stream().map(this::toResponse).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<AttendanceRecordResponse> getByStudent(UUID studentId) {
+        return attendanceRepository.findByStudentId(studentId)
+                .stream().map(this::toResponse).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public AttendanceRecordResponse getById(UUID id) {
+        return toResponse(findOrThrow(id));
+    }
+
+    @Transactional
+    public AttendanceRecordResponse markPresent(AttendanceRecordRequest req) {
+        var session = sessionRepository.findById(req.getSessionId())
+                .orElseThrow(() -> new EntityNotFoundException("Session not found"));
+
+        if (session.getEndedAt() != null)
+            throw new IllegalArgumentException("Session already ended");
+
+        var student = studentRepository.findById(req.getStudentId())
+                .orElseThrow(() -> new EntityNotFoundException("Student not found"));
+
+        var existing = attendanceRepository
+                .findBySessionIdAndStudentId(req.getSessionId(), req.getStudentId());
+
+        if (existing.isPresent()) {
+            var record = existing.get();
+            record.setStatus(AttendanceStatus.PRESENT);
+            record.setConfidence(req.getConfidence());
+            return toResponse(attendanceRepository.save(record));
+        }
+
+        return toResponse(attendanceRepository.save(AttendanceRecord.builder()
+                .session(session)
+                .student(student)
+                .status(AttendanceStatus.PRESENT)
+                .confidence(req.getConfidence())
+                .build()));
+    }
+
+    @Transactional
+    public AttendanceRecordResponse override(UUID id, AttendanceOverrideRequest req, UUID overriddenById) {
+        var record = findOrThrow(id);
+        var overriddenBy = userRepository.findById(overriddenById)
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+
+        record.setStatus(AttendanceStatus.MANUAL_OVERRIDE);
+        record.setOverriddenBy(overriddenBy);
+        record.setOverrideReason(req.getReason());
+        record.setConfidence(null);
+
+        return toResponse(attendanceRepository.save(record));
+    }
+
+    private AttendanceRecord findOrThrow(UUID id) {
+        return attendanceRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Attendance record not found: " + id));
+    }
+
+    private AttendanceRecordResponse toResponse(AttendanceRecord a) {
+        return AttendanceRecordResponse.builder()
+                .id(a.getId())
+                .sessionId(a.getSession().getId())
+                .studentId(a.getStudent().getId())
+                .researchId(a.getStudent().getResearchId())
+                .fullName(a.getStudent().getFullName())
+                .studentCode(a.getStudent().getStudentCode())
+                .status(a.getStatus().name())
+                .confidence(a.getConfidence())
+                .detectedAt(a.getDetectedAt())
+                .overriddenById(a.getOverriddenBy() != null ? a.getOverriddenBy().getId() : null)
+                .overriddenByName(a.getOverriddenBy() != null ? a.getOverriddenBy().getFullName() : null)
+                .overrideReason(a.getOverrideReason())
+                .build();
+    }
+}
