@@ -35,6 +35,26 @@ public class BenchmarkResult {
     @Column(nullable = false)
     private Double threshold;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "lighting_condition", columnDefinition = "lighting_condition")
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private LightingCondition lightingCondition;
+    
+    @Enumerated(EnumType.STRING)
+    @Column(name = "face_angle", columnDefinition = "face_angle")
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private FaceAngle faceAngle;
+    
+    @Enumerated(EnumType.STRING)
+    @Column(name = "occlusion", columnDefinition = "occlusion_type")
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private OcclusionType occlusion;
+
+    @Column(name = "distance_cm")
+    private Integer distanceCm;
+    @Column(name = "notes")
+    private String notes;
+
     @Column private Double accuracy;
     @Column private Double precision;
     @Column private Double recall;
