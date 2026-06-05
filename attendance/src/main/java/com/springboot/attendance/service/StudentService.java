@@ -37,7 +37,7 @@ public class StudentService {
     }
 
     @Transactional
-    public StudentResponse create(StudentRequest req) {
+    public StudentResponse create(StudentRequest req, UUID actorId) {
         if (studentRepository.existsByResearchId(req.getResearchId()))
             throw new IllegalArgumentException("Research ID already exists: " + req.getResearchId());
 
@@ -49,12 +49,12 @@ public class StudentService {
                 .build());
 
         auditLogService.log(
-            null,
+            actorId,
             AuditAction.CREATE_STUDENT,
             "students",
             saved.getId(),
             null,
-            String.format("{\"researchId\":\"%s\",\"studentCode\":\"%s\"}", req.getResearchId(), req.getStudentCode()),
+            String.format("{\"researchId\":\"%s\",\"studentCode\":\"%s\"}", saved.getResearchId(), saved.getStudentCode()),
             null,
             null
         );
@@ -62,24 +62,44 @@ public class StudentService {
         return toResponse(saved);
     }
 
+
     @Transactional
-    public StudentResponse update(UUID id, StudentRequest req) {
+    public StudentResponse update(UUID id, StudentRequest req, UUID actorId) {
         var entity = findOrThrow(id);
+
+        String oldValue = String.format("{\"researchId\":\"%s\",\"studentCode\":\"%s\"}", 
+            entity.getResearchId(), entity.getStudentCode());
+
         entity.setResearchId(req.getResearchId());
         entity.setFullName(req.getFullName());
         entity.setStudentCode(req.getStudentCode());
         entity.setEmail(req.getEmail());
-        return toResponse(studentRepository.save(entity));
+
+        var saved = studentRepository.save(entity);
+
+        auditLogService.log(
+            actorId,
+            AuditAction.UPDATE_STUDENT,
+            "students",
+            id,
+            oldValue,
+            String.format("{\"researchId\":\"%s\",\"studentCode\":\"%s\"}", saved.getResearchId(), saved.getStudentCode()),
+            null,
+            null
+        );
+
+        return toResponse(saved);
     }
 
+
     @Transactional
-    public void deactivate(UUID id) {
+    public void deactivate(UUID id, UUID actorId) {
         var entity = findOrThrow(id);
         entity.setActive(false);
         studentRepository.save(entity);
-    
+
         auditLogService.log(
-            null,
+            actorId,
             AuditAction.DELETE_STUDENT,
             "students",
             id,

@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -38,20 +39,20 @@ public class StudentController {
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'LECTURER')")
-    public ResponseEntity<StudentResponse> create(@Valid @RequestBody StudentRequest req) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(studentService.create(req));
+    public ResponseEntity<StudentResponse> create(@Valid @RequestBody StudentRequest req, @AuthenticationPrincipal UUID userId) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(studentService.create(req, userId));
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'LECTURER')")
-    public ResponseEntity<StudentResponse> update(@PathVariable UUID id, @Valid @RequestBody StudentRequest req) {
-        return ResponseEntity.ok(studentService.update(id, req));
+    public ResponseEntity<StudentResponse> update(@PathVariable UUID id, @Valid @RequestBody StudentRequest req, @AuthenticationPrincipal UUID userId) {
+        return ResponseEntity.ok(studentService.update(id, req, userId));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> deactivate(@PathVariable UUID id) {
-        studentService.deactivate(id);
+    public ResponseEntity<?> deactivate(@PathVariable UUID id, @AuthenticationPrincipal UUID userId) {
+        studentService.deactivate(id, userId);
         return ResponseEntity.ok(Map.of("message", "Student deactivated"));
     }
 }
