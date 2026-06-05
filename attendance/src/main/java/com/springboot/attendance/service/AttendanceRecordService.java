@@ -15,10 +15,8 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -33,7 +31,7 @@ public class AttendanceRecordService {
 
     @Transactional(readOnly = true)
     public PageResponse<AttendanceRecordResponse> getBySession(UUID sessionId, Pageable pageable) {
-        var page = attendanceRepository.findBySessionId(sessionId, pageable);
+        var page = attendanceRepository.findPageBySessionId(sessionId, pageable);
         return PageResponse.<AttendanceRecordResponse>builder()
                 .content(page.getContent().stream().map(this::toResponse).toList())
                 .page(page.getNumber())
@@ -46,7 +44,7 @@ public class AttendanceRecordService {
     
     @Transactional(readOnly = true)
     public PageResponse<AttendanceRecordResponse> getByStudent(UUID studentId, Pageable pageable) {
-        var page = attendanceRepository.findByStudentId(studentId, pageable);
+        var page = attendanceRepository.findPageByStudentId(studentId, pageable);
         return PageResponse.<AttendanceRecordResponse>builder()
                 .content(page.getContent().stream().map(this::toResponse).toList())
                 .page(page.getNumber())

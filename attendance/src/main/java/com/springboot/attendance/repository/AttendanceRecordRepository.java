@@ -11,8 +11,13 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface AttendanceRecordRepository extends JpaRepository<AttendanceRecord, UUID> {
-    Page<AttendanceRecord> findBySessionId(UUID sessionId, Pageable pageable);
-    Page<AttendanceRecord> findByStudentId(UUID studentId, Pageable pageable);
-    Optional<AttendanceRecord> findBySessionIdAndStudentId(UUID sessionId, UUID studentId);
+    
+    List<AttendanceRecord> findBySessionId(UUID sessionId);
+    List<AttendanceRecord> findByStudentId(UUID studentId);
     List<AttendanceRecord> findBySessionIdAndStatus(UUID sessionId, AttendanceStatus status);
+    
+    Page<AttendanceRecord> findPageBySessionId(UUID sessionId, Pageable pageable);
+    Page<AttendanceRecord> findPageByStudentId(UUID studentId, Pageable pageable);
+    
+    Optional<AttendanceRecord> findBySessionIdAndStudentId(UUID sessionId, UUID studentId);
 }
