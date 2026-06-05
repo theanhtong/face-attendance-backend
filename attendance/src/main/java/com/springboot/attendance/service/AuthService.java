@@ -3,6 +3,7 @@ package com.springboot.attendance.service;
 import com.springboot.attendance.dto.request.LoginRequest;
 import com.springboot.attendance.dto.request.RefreshTokenRequest;
 import com.springboot.attendance.dto.response.AuthResponse;
+import com.springboot.attendance.entity.AuditAction;
 import com.springboot.attendance.entity.UserSession;
 import com.springboot.attendance.repository.UserRepository;
 import com.springboot.attendance.repository.UserSessionRepository;
@@ -28,6 +29,7 @@ public class AuthService {
     private final UserSessionRepository userSessionRepository;
     private final JwtUtil jwtUtil;
     private final PasswordEncoder passwordEncoder;
+    private final AuditLogService auditLogService;
 
     @Transactional
     public AuthResponse login(LoginRequest req, String ipAddress, String userAgent) {
@@ -55,6 +57,17 @@ public class AuthService {
 
         user.setLastLoginAt(OffsetDateTime.now());
         userRepository.save(user);
+
+        auditLogService.log(
+            user.getId(),
+            AuditAction.LOGIN,
+            "users",
+            user.getId(),
+            null,
+            null,
+            ipAddress,
+            userAgent
+        );
 
         return AuthResponse.builder()
                 .accessToken(accessToken)
@@ -103,11 +116,25 @@ public class AuthService {
     @Transactional
     public void logout(String refreshToken) {
         String tokenHash = hashToken(refreshToken);
-        userSessionRepository.findByRefreshTokenHash(tokenHash)
-                .ifPresent(s -> {
-                    s.setRevoked(true);
-                    userSessionRepository.save(s);
-                });
+        var sessionOpt = userSessionRepository.findByRefreshTokenHash(tokenHash);
+        if (sessionOpt.isEmpty()) return;
+    
+        var session = sessionOpt.get();
+        UUID userId = session.getUser().getId();
+    
+        session.setRevoked(true);
+        userSessionRepository.save(session);
+    
+        auditLogService.log(
+            userId,
+            AuditAction.LOGOUT,
+            "users",
+            userId,
+            null,
+            null,
+            null,
+            null
+        );
     }
 
     @Transactional

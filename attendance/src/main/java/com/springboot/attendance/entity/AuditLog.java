@@ -34,9 +34,11 @@ public class AuditLog {
     private UUID targetId;
 
     @Column(name = "old_value", columnDefinition = "jsonb")
+    @JdbcTypeCode(SqlTypes.JSON)
     private String oldValue;
-
+    
     @Column(name = "new_value", columnDefinition = "jsonb")
+    @JdbcTypeCode(SqlTypes.JSON)
     private String newValue;
 
     @Column(name = "ip_address", length = 45)
