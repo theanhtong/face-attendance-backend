@@ -3,6 +3,7 @@ package com.springboot.attendance.service;
 import com.springboot.attendance.dto.request.AttendanceOverrideRequest;
 import com.springboot.attendance.dto.request.AttendanceRecordRequest;
 import com.springboot.attendance.dto.response.AttendanceRecordResponse;
+import com.springboot.attendance.dto.response.PageResponse;
 import com.springboot.attendance.entity.AttendanceRecord;
 import com.springboot.attendance.entity.AttendanceStatus;
 import com.springboot.attendance.entity.AuditAction;
@@ -14,6 +15,8 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.UUID;
@@ -29,15 +32,29 @@ public class AttendanceRecordService {
     private final AuditLogService auditLogService;
 
     @Transactional(readOnly = true)
-    public List<AttendanceRecordResponse> getBySession(UUID sessionId) {
-        return attendanceRepository.findBySessionId(sessionId)
-                .stream().map(this::toResponse).toList();
+    public PageResponse<AttendanceRecordResponse> getBySession(UUID sessionId, Pageable pageable) {
+        var page = attendanceRepository.findBySessionId(sessionId, pageable);
+        return PageResponse.<AttendanceRecordResponse>builder()
+                .content(page.getContent().stream().map(this::toResponse).toList())
+                .page(page.getNumber())
+                .size(page.getSize())
+                .totalElements(page.getTotalElements())
+                .totalPages(page.getTotalPages())
+                .last(page.isLast())
+                .build();
     }
-
+    
     @Transactional(readOnly = true)
-    public List<AttendanceRecordResponse> getByStudent(UUID studentId) {
-        return attendanceRepository.findByStudentId(studentId)
-                .stream().map(this::toResponse).toList();
+    public PageResponse<AttendanceRecordResponse> getByStudent(UUID studentId, Pageable pageable) {
+        var page = attendanceRepository.findByStudentId(studentId, pageable);
+        return PageResponse.<AttendanceRecordResponse>builder()
+                .content(page.getContent().stream().map(this::toResponse).toList())
+                .page(page.getNumber())
+                .size(page.getSize())
+                .totalElements(page.getTotalElements())
+                .totalPages(page.getTotalPages())
+                .last(page.isLast())
+                .build();
     }
 
     @Transactional(readOnly = true)

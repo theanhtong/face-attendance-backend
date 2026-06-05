@@ -2,16 +2,18 @@ package com.springboot.attendance.controller;
 
 import com.springboot.attendance.dto.request.ClassRequest;
 import com.springboot.attendance.dto.response.ClassResponse;
+import com.springboot.attendance.dto.response.PageResponse;
 import com.springboot.attendance.service.ClassService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -23,18 +25,18 @@ public class ClassController {
     private final ClassService classService;
 
     @GetMapping
-    public ResponseEntity<List<ClassResponse>> getAll() {
-        return ResponseEntity.ok(classService.getAll());
+    public ResponseEntity<PageResponse<ClassResponse>> getAll(Pageable pageable) {
+        return ResponseEntity.ok(classService.getAll(pageable));
+    }
+    
+    @GetMapping("/lecturer/{lecturerId}")
+    public ResponseEntity<PageResponse<ClassResponse>> getByLecturer(@PathVariable UUID lecturerId, Pageable pageable) {
+        return ResponseEntity.ok(classService.getByLecturer(lecturerId, pageable));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ClassResponse> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(classService.getById(id));
-    }
-
-    @GetMapping("/lecturer/{lecturerId}")
-    public ResponseEntity<List<ClassResponse>> getByLecturer(@PathVariable UUID lecturerId) {
-        return ResponseEntity.ok(classService.getByLecturer(lecturerId));
     }
 
     @PostMapping

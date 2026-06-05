@@ -1,16 +1,18 @@
 package com.springboot.attendance.service;
 
 import com.springboot.attendance.dto.request.StudentRequest;
+import com.springboot.attendance.dto.response.PageResponse;
 import com.springboot.attendance.dto.response.StudentResponse;
 import com.springboot.attendance.entity.AuditAction;
 import com.springboot.attendance.entity.Student;
 import com.springboot.attendance.repository.StudentRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -21,8 +23,16 @@ public class StudentService {
     private final AuditLogService auditLogService;
 
     @Transactional(readOnly = true)
-    public List<StudentResponse> getAll() {
-        return studentRepository.findAll().stream().map(this::toResponse).toList();
+    public PageResponse<StudentResponse> getAll(Pageable pageable) {
+        var page = studentRepository.findAll(pageable);
+        return PageResponse.<StudentResponse>builder()
+                .content(page.getContent().stream().map(this::toResponse).toList())
+                .page(page.getNumber())
+                .size(page.getSize())
+                .totalElements(page.getTotalElements())
+                .totalPages(page.getTotalPages())
+                .last(page.isLast())
+                .build();
     }
 
     @Transactional(readOnly = true)

@@ -2,16 +2,18 @@ package com.springboot.attendance.service;
 
 import com.springboot.attendance.dto.request.ClassRequest;
 import com.springboot.attendance.dto.response.ClassResponse;
+import com.springboot.attendance.dto.response.PageResponse;
 import com.springboot.attendance.entity.AuditAction;
 import com.springboot.attendance.entity.Class;
 import com.springboot.attendance.repository.ClassRepository;
 import com.springboot.attendance.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -23,18 +25,34 @@ public class ClassService {
     private final AuditLogService auditLogService;
 
     @Transactional(readOnly = true)
-    public List<ClassResponse> getAll() {
-        return classRepository.findAll().stream().map(this::toResponse).toList();
+    public PageResponse<ClassResponse> getAll(Pageable pageable) {
+        var page = classRepository.findAll(pageable);
+        return PageResponse.<ClassResponse>builder()
+                .content(page.getContent().stream().map(this::toResponse).toList())
+                .page(page.getNumber())
+                .size(page.getSize())
+                .totalElements(page.getTotalElements())
+                .totalPages(page.getTotalPages())
+                .last(page.isLast())
+                .build();
+    }
+
+    @Transactional(readOnly = true)
+    public PageResponse<ClassResponse> getByLecturer(UUID lecturerId, Pageable pageable) {
+        var page = classRepository.findByLecturerId(lecturerId, pageable);
+        return PageResponse.<ClassResponse>builder()
+                .content(page.getContent().stream().map(this::toResponse).toList())
+                .page(page.getNumber())
+                .size(page.getSize())
+                .totalElements(page.getTotalElements())
+                .totalPages(page.getTotalPages())
+                .last(page.isLast())
+                .build();
     }
 
     @Transactional(readOnly = true)
     public ClassResponse getById(UUID id) {
         return toResponse(findOrThrow(id));
-    }
-
-    @Transactional(readOnly = true)
-    public List<ClassResponse> getByLecturer(UUID lecturerId) {
-        return classRepository.findByLecturerId(lecturerId).stream().map(this::toResponse).toList();
     }
 
     @Transactional

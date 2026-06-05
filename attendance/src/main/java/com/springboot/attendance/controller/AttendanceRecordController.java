@@ -3,15 +3,17 @@ package com.springboot.attendance.controller;
 import com.springboot.attendance.dto.request.AttendanceOverrideRequest;
 import com.springboot.attendance.dto.request.AttendanceRecordRequest;
 import com.springboot.attendance.dto.response.AttendanceRecordResponse;
+import com.springboot.attendance.dto.response.PageResponse;
 import com.springboot.attendance.service.AttendanceRecordService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -22,13 +24,14 @@ public class AttendanceRecordController {
     private final AttendanceRecordService attendanceService;
 
     @GetMapping("/session/{sessionId}")
-    public ResponseEntity<List<AttendanceRecordResponse>> getBySession(@PathVariable UUID sessionId) {
-        return ResponseEntity.ok(attendanceService.getBySession(sessionId));
+    public ResponseEntity<PageResponse<AttendanceRecordResponse>> getBySession(@PathVariable UUID sessionId, Pageable pageable) {
+        return ResponseEntity.ok(attendanceService.getBySession(sessionId, pageable));
     }
 
     @GetMapping("/student/{studentId}")
-    public ResponseEntity<List<AttendanceRecordResponse>> getByStudent(@PathVariable UUID studentId) {
-        return ResponseEntity.ok(attendanceService.getByStudent(studentId));
+    public ResponseEntity<PageResponse<AttendanceRecordResponse>> getByStudent(
+            @PathVariable UUID studentId, Pageable pageable) {
+        return ResponseEntity.ok(attendanceService.getByStudent(studentId, pageable));
     }
 
     @GetMapping("/{attendanceId}")

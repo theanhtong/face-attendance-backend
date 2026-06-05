@@ -1,17 +1,19 @@
 package com.springboot.attendance.controller;
 
 import com.springboot.attendance.dto.request.StudentRequest;
+import com.springboot.attendance.dto.response.PageResponse;
 import com.springboot.attendance.dto.response.StudentResponse;
 import com.springboot.attendance.service.StudentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -23,8 +25,8 @@ public class StudentController {
     private final StudentService studentService;
 
     @GetMapping
-    public ResponseEntity<List<StudentResponse>> getAll() {
-        return ResponseEntity.ok(studentService.getAll());
+    public ResponseEntity<PageResponse<StudentResponse>> getAll(Pageable pageable) {
+        return ResponseEntity.ok(studentService.getAll(pageable));
     }
 
     @GetMapping("/{id}")
