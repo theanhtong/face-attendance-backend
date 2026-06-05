@@ -43,12 +43,12 @@ public class ClassSessionController {
 
     @PatchMapping("/{sessionId}/end")
     @PreAuthorize("hasAnyRole('ADMIN', 'LECTURER')")
-    public ResponseEntity<ClassSessionResponse> end(@PathVariable UUID id) {
-        return ResponseEntity.ok(sessionService.end(id));
+    public ResponseEntity<ClassSessionResponse> end(@PathVariable UUID sessionId) {
+        return ResponseEntity.ok(sessionService.end(sessionId));
     }
 
     @GetMapping("/{sessionId}/active")
-    public ResponseEntity<?> isActive(@PathVariable UUID id) {
-        return ResponseEntity.ok(Map.of("active", sessionService.isActive(id)));
+    public ResponseEntity<?> isActive(@PathVariable UUID sessionId) {
+        return ResponseEntity.ok(Map.of("active", sessionService.isActive(sessionId)));
     }
 }

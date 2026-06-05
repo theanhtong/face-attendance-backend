@@ -2,6 +2,7 @@ package com.springboot.attendance.service;
 
 import com.springboot.attendance.dto.request.StudentRequest;
 import com.springboot.attendance.dto.response.StudentResponse;
+import com.springboot.attendance.entity.AuditAction;
 import com.springboot.attendance.entity.Student;
 import com.springboot.attendance.repository.StudentRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -17,6 +18,7 @@ import java.util.UUID;
 public class StudentService {
 
     private final StudentRepository studentRepository;
+    private final AuditLogService auditLogService;
 
     @Transactional(readOnly = true)
     public List<StudentResponse> getAll() {
@@ -39,12 +41,25 @@ public class StudentService {
         if (studentRepository.existsByResearchId(req.getResearchId()))
             throw new IllegalArgumentException("Research ID already exists: " + req.getResearchId());
 
-        return toResponse(studentRepository.save(Student.builder()
+        var saved = studentRepository.save(Student.builder()
                 .researchId(req.getResearchId())
                 .fullName(req.getFullName())
                 .studentCode(req.getStudentCode())
                 .email(req.getEmail())
-                .build()));
+                .build());
+
+        auditLogService.log(
+            null,
+            AuditAction.CREATE_STUDENT,
+            "students",
+            saved.getId(),
+            null,
+            String.format("{\"researchId\":\"%s\",\"studentCode\":\"%s\"}", req.getResearchId(), req.getStudentCode()),
+            null,
+            null
+        );
+
+        return toResponse(saved);
     }
 
     @Transactional
@@ -62,6 +77,17 @@ public class StudentService {
         var entity = findOrThrow(id);
         entity.setActive(false);
         studentRepository.save(entity);
+    
+        auditLogService.log(
+            null,
+            AuditAction.DELETE_STUDENT,
+            "students",
+            id,
+            String.format("{\"researchId\":\"%s\"}", entity.getResearchId()),
+            null,
+            null,
+            null
+        );
     }
 
     private Student findOrThrow(UUID id) {

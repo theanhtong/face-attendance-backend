@@ -5,6 +5,7 @@ import com.springboot.attendance.dto.request.AttendanceRecordRequest;
 import com.springboot.attendance.dto.response.AttendanceRecordResponse;
 import com.springboot.attendance.entity.AttendanceRecord;
 import com.springboot.attendance.entity.AttendanceStatus;
+import com.springboot.attendance.entity.AuditAction;
 import com.springboot.attendance.repository.AttendanceRecordRepository;
 import com.springboot.attendance.repository.ClassSessionRepository;
 import com.springboot.attendance.repository.StudentRepository;
@@ -25,6 +26,7 @@ public class AttendanceRecordService {
     private final ClassSessionRepository sessionRepository;
     private final StudentRepository studentRepository;
     private final UserRepository userRepository;
+    private final AuditLogService auditLogService;
 
     @Transactional(readOnly = true)
     public List<AttendanceRecordResponse> getBySession(UUID sessionId) {
@@ -78,12 +80,29 @@ public class AttendanceRecordService {
         var overriddenBy = userRepository.findById(overriddenById)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
 
+        String oldValue = String.format("{\"status\":\"%s\"}", record.getStatus().name());
+
         record.setStatus(AttendanceStatus.MANUAL_OVERRIDE);
         record.setOverriddenBy(overriddenBy);
         record.setOverrideReason(req.getReason());
         record.setConfidence(null);
 
-        return toResponse(attendanceRepository.save(record));
+        var saved = attendanceRepository.save(record);
+
+        String newValue = String.format("{\"status\":\"MANUAL_OVERRIDE\",\"reason\":\"%s\"}", req.getReason());
+
+        auditLogService.log(
+            overriddenById,
+            AuditAction.OVERRIDE_ATTENDANCE,
+            "attendance_records",
+            id,
+            oldValue,
+            newValue,
+            null,
+            null
+        );
+
+        return toResponse(saved);
     }
 
     private AttendanceRecord findOrThrow(UUID id) {

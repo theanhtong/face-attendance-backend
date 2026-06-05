@@ -2,6 +2,7 @@ package com.springboot.attendance.service;
 
 import com.springboot.attendance.dto.request.ClassSessionRequest;
 import com.springboot.attendance.dto.response.ClassSessionResponse;
+import com.springboot.attendance.entity.AuditAction;
 import com.springboot.attendance.entity.ClassSession;
 import com.springboot.attendance.repository.ClassRepository;
 import com.springboot.attendance.repository.ClassSessionRepository;
@@ -22,6 +23,7 @@ public class ClassSessionService {
     private final ClassSessionRepository sessionRepository;
     private final ClassRepository classRepository;
     private final UserRepository userRepository;
+    private final AuditLogService auditLogService;
 
     @Transactional(readOnly = true)
     public List<ClassSessionResponse> getByClass(UUID classId) {
@@ -42,11 +44,25 @@ public class ClassSessionService {
         var createdBy = userRepository.findById(createdById)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
 
-        return toResponse(sessionRepository.save(ClassSession.builder()
-                .classEntity(classEntity)
-                .createdBy(createdBy)
-                .notes(req.getNotes())
-                .build()));
+        var saved = sessionRepository.save(ClassSession.builder()
+                    .classEntity(classEntity)
+                    .createdBy(createdBy)
+                    .notes(req.getNotes())
+                    .build());
+
+        auditLogService.log(
+            createdById,
+            AuditAction.CREATE_SESSION,
+            "class_sessions",
+            saved.getId(),
+            null,
+            String.format("{\"classId\":\"%s\"}", req.getClassId()),
+            null,
+            null
+        );
+
+        return toResponse(saved);
+
     }
 
     @Transactional
@@ -57,7 +73,21 @@ public class ClassSessionService {
             throw new IllegalArgumentException("Session already ended");
 
         session.setEndedAt(OffsetDateTime.now());
-        return toResponse(sessionRepository.save(session));
+
+        var saved = sessionRepository.save(session);
+
+        auditLogService.log(
+            null,
+            AuditAction.END_SESSION,
+            "class_sessions",
+            id,
+            null,
+            String.format("{\"endedAt\":\"%s\"}", saved.getEndedAt()),
+            null,
+            null
+        );
+
+        return toResponse(saved);
     }
 
     @Transactional(readOnly = true)

@@ -2,6 +2,7 @@ package com.springboot.attendance.service;
 
 import com.springboot.attendance.dto.request.FaceEmbeddingRequest;
 import com.springboot.attendance.dto.response.FaceEmbeddingResponse;
+import com.springboot.attendance.entity.AuditAction;
 import com.springboot.attendance.entity.FaceEmbedding;
 import com.springboot.attendance.entity.ModelName;
 import com.springboot.attendance.repository.FaceEmbeddingRepository;
@@ -21,6 +22,7 @@ public class FaceEmbeddingService {
     private final FaceEmbeddingRepository embeddingRepository;
     private final StudentRepository studentRepository;
     private final UserRepository userRepository;
+    private final AuditLogService auditLogService;
 
     @Transactional(readOnly = true)
     public FaceEmbeddingResponse getByStudent(UUID studentId) {
@@ -36,7 +38,6 @@ public class FaceEmbeddingService {
         var createdBy = userRepository.findById(createdById)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
 
-        // Invalidate existing embedding nếu có
         embeddingRepository.findByStudentIdAndIsValidTrue(req.getStudentId())
                 .ifPresent(e -> {
                     e.setValid(false);
@@ -50,21 +51,46 @@ public class FaceEmbeddingService {
             throw new IllegalArgumentException("Invalid model name: " + req.getModelName());
         }
 
-        return toResponse(embeddingRepository.save(FaceEmbedding.builder()
+        var saved = embeddingRepository.save(FaceEmbedding.builder()
                 .student(student)
                 .embedding(req.getEmbedding())
                 .modelName(modelName)
                 .embeddingDim(req.getEmbeddingDim())
                 .createdBy(createdBy)
-                .build()));
-    }
+                .build());
 
+        auditLogService.log(
+            createdById,
+            AuditAction.CREATE_EMBEDDING,
+            "face_embeddings",
+            saved.getId(),
+            null,
+            String.format("{\"studentId\":\"%s\",\"modelName\":\"%s\"}", req.getStudentId(), req.getModelName()),
+            null,
+            null
+        );
+
+        return toResponse(saved);
+    }    
+    
     @Transactional
     public void invalidate(UUID studentId) {
         embeddingRepository.findByStudentIdAndIsValidTrue(studentId)
                 .ifPresent(e -> {
+                    UUID embeddingId = e.getId();
                     e.setValid(false);
                     embeddingRepository.save(e);
+
+                    auditLogService.log(
+                        null,
+                        AuditAction.DELETE_EMBEDDING,
+                        "face_embeddings",
+                        embeddingId,
+                        String.format("{\"studentId\":\"%s\"}", studentId),
+                        null,
+                        null,
+                        null
+                    );
                 });
     }
 
