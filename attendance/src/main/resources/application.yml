@@ -30,3 +30,6 @@ jwt:
   secret: your-secret-key-change-this-in-production
   access-token-expiry: 900
   refresh-token-expiry: 604800
+
+internal:
+  api-key: your-internal-api-key-change-this
