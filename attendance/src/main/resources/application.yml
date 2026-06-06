@@ -33,3 +33,10 @@ jwt:
 
 internal:
   api-key: your-internal-api-key-change-this
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
