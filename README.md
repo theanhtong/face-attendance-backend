@@ -6,12 +6,10 @@ Hệ thống điểm danh nhận diện khuôn mặt — Spring Boot (REST API) 
 
 - Spring Boot 3.5.14 / Java 21 / Maven
 - PostgreSQL 17
-- FastAPI / Python 3.10+
 
 ## Yêu cầu
 
-- Java 21, Maven, PostgreSQL 17, Python 3.10+
-
+- Java 21, Maven, PostgreSQL 17
 ## Setup & Run
 
 **1. Tạo database và chạy schema**
