@@ -1,9 +1,5 @@
-# Python
-fastapi/venv/
-fastapi/__pycache__/
-fastapi/**/__pycache__/
-fastapi/*.pyc
-fastapi/.env
+# Config
+.env
 
 # Java
 attendance/target/

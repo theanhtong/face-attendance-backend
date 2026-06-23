@@ -2,9 +2,9 @@ spring:
   application:
     name: attendance
   datasource:
-    url: jdbc:postgresql://localhost:5432/attendance_db
-    username: postgres
-    password: admin123
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/attendance_db}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:admin123}
   data:
     web:
       pageable:
@@ -23,15 +23,15 @@ server:
   port: 8080
 
 jwt:
-  secret: your-secret-key-change-this-in-production
-  access-token-expiry: 900
-  refresh-token-expiry: 604800
+  secret: ${JWT_SECRET:your-secret-key-change-this-in-production}
+  access-token-expiry: ${JWT_ACCESS_TOKEN_EXPIRY:900}
+  refresh-token-expiry: ${JWT_REFRESH_TOKEN_EXPIRY:604800}
 
 internal:
-  api-key: your-secret-key-change-this-in-production
+  api-key: ${INTERNAL_API_KEY:your-secret-key-change-this-in-production}
 
 encryption:
-  secret-key: KOD+A70PEgZTYqPGuCNOSMbx8nVYYoBZLEAH1ZGXwiY=
+  secret-key: ${ENCRYPTION_SECRET_KEY:KOD+A70PEgZTYqPGuCNOSMbx8nVYYoBZLEAH1ZGXwiY=}
 
 springdoc:
   api-docs:
