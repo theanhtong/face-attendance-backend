@@ -8,8 +8,11 @@ import com.springboot.attendance.entity.ModelName;
 import com.springboot.attendance.repository.FaceEmbeddingRepository;
 import com.springboot.attendance.repository.StudentRepository;
 import com.springboot.attendance.repository.UserRepository;
+import com.springboot.attendance.security.AesEncryptionUtil;
+
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,14 +26,16 @@ public class FaceEmbeddingService {
     private final StudentRepository studentRepository;
     private final UserRepository userRepository;
     private final AuditLogService auditLogService;
+    private final AesEncryptionUtil encryptionUtil;
 
     @Transactional(readOnly = true)
     public FaceEmbeddingResponse getByStudent(UUID studentId) {
-        return toResponse(embeddingRepository.findByStudentIdAndIsValidTrue(studentId)
-                .orElseThrow(() -> new EntityNotFoundException("No active embedding for student: " + studentId)));
+        var entity = embeddingRepository.findByStudentIdAndIsValidTrue(studentId)
+                .orElseThrow(() -> new EntityNotFoundException("No active embedding for student: " + studentId));
+        return toResponse(entity);
     }
 
-    @Transactional
+        @Transactional
     public FaceEmbeddingResponse save(FaceEmbeddingRequest req, UUID createdById) {
         var student = studentRepository.findById(req.getStudentId())
                 .orElseThrow(() -> new EntityNotFoundException("Student not found"));
@@ -51,9 +56,11 @@ public class FaceEmbeddingService {
             throw new IllegalArgumentException("Invalid model name: " + req.getModelName());
         }
 
+        byte[] encryptedEmbedding = encryptionUtil.encrypt(req.getEmbedding());
+
         var saved = embeddingRepository.save(FaceEmbedding.builder()
                 .student(student)
-                .embedding(req.getEmbedding())
+                .embedding(encryptedEmbedding)
                 .modelName(modelName)
                 .embeddingDim(req.getEmbeddingDim())
                 .createdBy(createdBy)
@@ -71,7 +78,7 @@ public class FaceEmbeddingService {
         );
 
         return toResponse(saved);
-    }    
+    }
     
     @Transactional
     public void invalidate(UUID studentId) {

@@ -28,7 +28,10 @@ jwt:
   refresh-token-expiry: 604800
 
 internal:
-  api-key: your-internal-api-key-change-this
+  api-key: your-secret-key-change-this-in-production
+
+encryption:
+  secret-key: KOD+A70PEgZTYqPGuCNOSMbx8nVYYoBZLEAH1ZGXwiY=
 
 springdoc:
   api-docs:

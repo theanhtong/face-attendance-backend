@@ -6,10 +6,12 @@ import com.springboot.attendance.dto.response.BenchmarkResultResponse;
 import com.springboot.attendance.dto.response.InternalEmbeddingResponse;
 import com.springboot.attendance.entity.AttendanceRecord;
 import com.springboot.attendance.entity.AttendanceStatus;
+import com.springboot.attendance.entity.FaceEmbedding;
 import com.springboot.attendance.repository.AttendanceRecordRepository;
 import com.springboot.attendance.repository.ClassSessionRepository;
 import com.springboot.attendance.repository.FaceEmbeddingRepository;
 import com.springboot.attendance.repository.StudentRepository;
+import com.springboot.attendance.security.AesEncryptionUtil;
 import com.springboot.attendance.service.BenchmarkResultService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
@@ -32,6 +34,7 @@ public class InternalController {
     private final StudentRepository studentRepository;
     private final FaceEmbeddingRepository embeddingRepository;
     private final BenchmarkResultService benchmarkService;
+    private final AesEncryptionUtil encryptionUtil;
 
     @PostMapping("/attendance/mark")
     @Transactional
@@ -77,21 +80,22 @@ public class InternalController {
         return ResponseEntity.ok(InternalEmbeddingResponse.builder()
                 .studentId(embedding.getStudent().getId())
                 .researchId(embedding.getStudent().getResearchId())
-                .embedding(embedding.getEmbedding())
+                .embedding(encryptionUtil.decrypt(embedding.getEmbedding()))
                 .modelName(embedding.getModelName().name())
                 .embeddingDim(embedding.getEmbeddingDim())
                 .build());
     }
 
+
     @GetMapping("/embeddings")
     @Transactional(readOnly = true)
     public ResponseEntity<List<InternalEmbeddingResponse>> getAllEmbeddings() {
         var embeddings = embeddingRepository.findAll().stream()
-                .filter(e -> e.isValid())
+                .filter(FaceEmbedding::isValid)
                 .map(e -> InternalEmbeddingResponse.builder()
                         .studentId(e.getStudent().getId())
                         .researchId(e.getStudent().getResearchId())
-                        .embedding(e.getEmbedding())
+                        .embedding(encryptionUtil.decrypt(e.getEmbedding()))
                         .modelName(e.getModelName().name())
                         .embeddingDim(e.getEmbeddingDim())
                         .build())

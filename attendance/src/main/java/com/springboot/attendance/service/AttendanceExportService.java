@@ -23,7 +23,7 @@ public class AttendanceExportService {
 
     @Transactional(readOnly = true)
     public byte[] exportBySession(UUID sessionId) {
-        var session = sessionRepository.findById(sessionId)
+        sessionRepository.findById(sessionId)
                 .orElseThrow(() -> new EntityNotFoundException("Session not found"));
 
         var records = attendanceRepository.findBySessionId(sessionId);
