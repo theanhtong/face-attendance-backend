@@ -1,42 +1,47 @@
 # Face Attendance Backend
 
-Hệ thống điểm danh nhận diện khuôn mặt — Spring Boot (REST API) + FastAPI (AI/ML) + PostgreSQL.
+Hệ thống điểm danh nhận diện khuôn mặt — Spring Boot (REST API) + PostgreSQL.
 
 ## Tech Stack
 
-- Spring Boot 3.5.14 / Java 21 / Maven
-- PostgreSQL 17
+| Layer    | Technology                        |
+| -------- | --------------------------------- |
+| Backend  | Spring Boot 3.5.14 / Java 21      |
+| Database | PostgreSQL 17                     |
+| Infra    | Docker / Docker Compose           |
 
 ## Yêu cầu
 
-- Java 21, Maven, PostgreSQL 17
-## Setup & Run
+- Docker & Docker Compose
 
-**1. Tạo database và chạy schema**
+## Quick Start
 
-```bash
-psql -U postgres -c "CREATE DATABASE attendance_db;"
-psql -U postgres -d attendance_db -f schema.sql
-```
-
-**2. Cấu hình `attendance/src/main/resources/application.yml`**
-
-```yaml
-spring.datasource.url: jdbc:postgresql://localhost:5432/attendance_db
-spring.datasource.username: postgres
-spring.datasource.password: yourpassword
-jwt.secret: your-secret-key-minimum-32-characters
-internal.api-key: your-internal-api-key
-```
-
-**3. Chạy Spring Boot**
+**1. Tạo file môi trường**
 
 ```bash
-cd attendance
-./mvnw spring-boot:run
+cp .env.example .env
 ```
 
-**4. Swagger UI:** `http://localhost:8080/swagger-ui.html`
+Chỉnh sửa `.env`:
+
+```env
+DB_PASSWORD=
+JWT_SECRET=
+JWT_ACCESS_TOKEN_EXPIRY=
+JWT_REFRESH_TOKEN_EXPIRY=
+INTERNAL_API_KEY=
+ENCRYPTION_SECRET_KEY=
+```
+
+**2. Chạy**
+
+```bash
+docker compose up -d
+```
+
+Schema và seed data được tự động khởi tạo khi container postgres khởi động lần đầu.
+
+**3. Swagger UI:** `http://localhost:8080/swagger-ui.html`
 
 ## API Overview
 
@@ -61,23 +66,22 @@ Chi tiết từng endpoint xem tại Swagger UI.
 
 Header: `X-Internal-Api-Key: {api-key}`
 
-| Method | Endpoint                           | Mô tả                 |
-| ------ | ---------------------------------- | --------------------- |
-| GET    | `/internal/embeddings`             | Load tất cả embedding |
-| GET    | `/internal/embeddings/{studentId}` | Embedding 1 sinh viên |
-| POST   | `/internal/attendance/mark`        | Ghi kết quả nhận diện |
-| POST   | `/internal/benchmark`              | Lưu kết quả benchmark |
+| Method | Endpoint                           | Mô tả                  |
+| ------ | ---------------------------------- | ---------------------- |
+| GET    | `/internal/embeddings`             | Load tất cả embedding  |
+| GET    | `/internal/embeddings/{studentId}` | Embedding 1 sinh viên  |
+| POST   | `/internal/attendance/mark`        | Ghi kết quả nhận diện  |
+| POST   | `/internal/benchmark`              | Lưu kết quả benchmark  |
 
-**Flow:**
-Tạo session → Load embeddings → Nhận diện realtime → Mark attendance → End session → Benchmark
+**Flow:** Tạo session → Load embeddings → Nhận diện realtime → Mark attendance → End session → Benchmark
 
 ## Roles
 
-| Role       | Quyền                             |
-| ---------- | --------------------------------- |
-| ADMIN      | Toàn quyền                        |
-| LECTURER   | Quản lý lớp, sinh viên, điểm danh |
-| RESEARCHER | Xem và chạy benchmark             |
+| Role       | Quyền                              |
+| ---------- | ---------------------------------- |
+| ADMIN      | Toàn quyền                         |
+| LECTURER   | Quản lý lớp, sinh viên, điểm danh  |
+| RESEARCHER | Xem và chạy benchmark              |
 
 ## CI/CD
 
