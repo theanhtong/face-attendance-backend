@@ -4,17 +4,17 @@ Hệ thống điểm danh nhận diện khuôn mặt — Spring Boot (REST API) 
 
 ## Tech Stack
 
-| Layer    | Technology                        |
-| -------- | --------------------------------- |
-| Backend  | Spring Boot 3.5.14 / Java 21      |
-| Database | PostgreSQL 17                     |
-| Infra    | Docker / Docker Compose           |
+| Layer    | Technology                   |
+| -------- | ---------------------------- |
+| Backend  | Spring Boot 3.5.14 / Java 21 |
+| Database | PostgreSQL 17                |
+| Infra    | Docker / Docker Compose      |
 
 ## Yêu cầu
 
-- Docker & Docker Compose
+- Java 21, Maven, PostgreSQL 17
 
-## Quick Start
+## Setup & Run
 
 **1. Tạo file môi trường**
 
@@ -66,22 +66,22 @@ Chi tiết từng endpoint xem tại Swagger UI.
 
 Header: `X-Internal-Api-Key: {api-key}`
 
-| Method | Endpoint                           | Mô tả                  |
-| ------ | ---------------------------------- | ---------------------- |
-| GET    | `/internal/embeddings`             | Load tất cả embedding  |
-| GET    | `/internal/embeddings/{studentId}` | Embedding 1 sinh viên  |
-| POST   | `/internal/attendance/mark`        | Ghi kết quả nhận diện  |
-| POST   | `/internal/benchmark`              | Lưu kết quả benchmark  |
+| Method | Endpoint                           | Mô tả                 |
+| ------ | ---------------------------------- | --------------------- |
+| GET    | `/internal/embeddings`             | Load tất cả embedding |
+| GET    | `/internal/embeddings/{studentId}` | Embedding 1 sinh viên |
+| POST   | `/internal/attendance/mark`        | Ghi kết quả nhận diện |
+| POST   | `/internal/benchmark`              | Lưu kết quả benchmark |
 
 **Flow:** Tạo session → Load embeddings → Nhận diện realtime → Mark attendance → End session → Benchmark
 
 ## Roles
 
-| Role       | Quyền                              |
-| ---------- | ---------------------------------- |
-| ADMIN      | Toàn quyền                         |
-| LECTURER   | Quản lý lớp, sinh viên, điểm danh  |
-| RESEARCHER | Xem và chạy benchmark              |
+| Role       | Quyền                             |
+| ---------- | --------------------------------- |
+| ADMIN      | Toàn quyền                        |
+| LECTURER   | Quản lý lớp, sinh viên, điểm danh |
+| RESEARCHER | Xem và chạy benchmark             |
 
 ## CI/CD
 
