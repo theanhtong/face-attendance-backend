@@ -12,27 +12,28 @@ spring:
         max-page-size: 100
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: none
     show-sql: false
     open-in-view: false
+    defer-datasource-initialization: true
     properties:
       hibernate:
         format_sql: true
-
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema.sql
+      data-locations: classpath:seed.sql
 server:
   port: 8080
-
 jwt:
   secret: ${JWT_SECRET:your-secret-key-change-this-in-production}
   access-token-expiry: ${JWT_ACCESS_TOKEN_EXPIRY:900}
   refresh-token-expiry: ${JWT_REFRESH_TOKEN_EXPIRY:604800}
-
 internal:
   api-key: ${INTERNAL_API_KEY:your-secret-key-change-this-in-production}
-
 encryption:
   secret-key: ${ENCRYPTION_SECRET_KEY:KOD+A70PEgZTYqPGuCNOSMbx8nVYYoBZLEAH1ZGXwiY=}
-
 springdoc:
   api-docs:
     path: /api-docs
