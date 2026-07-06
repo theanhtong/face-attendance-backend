@@ -2,67 +2,26 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 17.5
--- Dumped by pg_dump version 17.5
-
 SET statement_timeout = 0;
 SET lock_timeout = 0;
 SET idle_in_transaction_session_timeout = 0;
 SET transaction_timeout = 0;
 SET client_encoding = 'UTF8';
 SET standard_conforming_strings = on;
-SELECT pg_catalog.set_config('search_path', '', false);
 SET check_function_bodies = false;
 SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
 
 --
--- Name: public; Type: SCHEMA; Schema: -; Owner: postgres
---
-
--- *not* creating schema, since initdb creates it
-
-
-ALTER SCHEMA public OWNER TO postgres;
-
---
--- Name: SCHEMA public; Type: COMMENT; Schema: -; Owner: postgres
---
-
-COMMENT ON SCHEMA public IS '';
-
-
---
--- Name: pgcrypto; Type: EXTENSION; Schema: -; Owner: -
+-- Extensions
 --
 
 CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA public;
-
-
---
--- Name: EXTENSION pgcrypto; Type: COMMENT; Schema: -; Owner: 
---
-
-COMMENT ON EXTENSION pgcrypto IS 'cryptographic functions';
-
-
---
--- Name: uuid-ossp; Type: EXTENSION; Schema: -; Owner: -
---
-
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA public;
 
-
 --
--- Name: EXTENSION "uuid-ossp"; Type: COMMENT; Schema: -; Owner: 
---
-
-COMMENT ON EXTENSION "uuid-ossp" IS 'generate universally unique identifiers (UUIDs)';
-
-
---
--- Name: attendance_status; Type: TYPE; Schema: public; Owner: postgres
+-- Types
 --
 
 CREATE TYPE public.attendance_status AS ENUM (
@@ -70,13 +29,6 @@ CREATE TYPE public.attendance_status AS ENUM (
     'ABSENT',
     'MANUAL_OVERRIDE'
 );
-
-
-ALTER TYPE public.attendance_status OWNER TO postgres;
-
---
--- Name: audit_action; Type: TYPE; Schema: public; Owner: postgres
---
 
 CREATE TYPE public.audit_action AS ENUM (
     'LOGIN',
@@ -105,25 +57,11 @@ CREATE TYPE public.audit_action AS ENUM (
     'UPDATE_STUDENT'
 );
 
-
-ALTER TYPE public.audit_action OWNER TO postgres;
-
---
--- Name: benchmark_scenario; Type: TYPE; Schema: public; Owner: postgres
---
-
 CREATE TYPE public.benchmark_scenario AS ENUM (
     'CONTROLLED',
     'CLASSROOM',
     'ADVERSE'
 );
-
-
-ALTER TYPE public.benchmark_scenario OWNER TO postgres;
-
---
--- Name: face_angle; Type: TYPE; Schema: public; Owner: postgres
---
 
 CREATE TYPE public.face_angle AS ENUM (
     'FRONTAL',
@@ -131,26 +69,12 @@ CREATE TYPE public.face_angle AS ENUM (
     'PROFILE'
 );
 
-
-ALTER TYPE public.face_angle OWNER TO postgres;
-
---
--- Name: lighting_condition; Type: TYPE; Schema: public; Owner: postgres
---
-
 CREATE TYPE public.lighting_condition AS ENUM (
     'BRIGHT',
     'NORMAL',
     'DIM',
     'BACKLIGHT'
 );
-
-
-ALTER TYPE public.lighting_condition OWNER TO postgres;
-
---
--- Name: model_name; Type: TYPE; Schema: public; Owner: postgres
---
 
 CREATE TYPE public.model_name AS ENUM (
     'facenet',
@@ -160,13 +84,6 @@ CREATE TYPE public.model_name AS ENUM (
     'mobilefacenet'
 );
 
-
-ALTER TYPE public.model_name OWNER TO postgres;
-
---
--- Name: occlusion_type; Type: TYPE; Schema: public; Owner: postgres
---
-
 CREATE TYPE public.occlusion_type AS ENUM (
     'NONE',
     'MASK',
@@ -174,24 +91,14 @@ CREATE TYPE public.occlusion_type AS ENUM (
     'PARTIAL'
 );
 
-
-ALTER TYPE public.occlusion_type OWNER TO postgres;
-
---
--- Name: user_role; Type: TYPE; Schema: public; Owner: postgres
---
-
 CREATE TYPE public.user_role AS ENUM (
     'ADMIN',
     'LECTURER',
     'RESEARCHER'
 );
 
-
-ALTER TYPE public.user_role OWNER TO postgres;
-
 --
--- Name: fn_set_updated_at(); Type: FUNCTION; Schema: public; Owner: postgres
+-- Function
 --
 
 CREATE FUNCTION public.fn_set_updated_at() RETURNS trigger
@@ -203,15 +110,11 @@ BEGIN
 END;
 $$;
 
-
-ALTER FUNCTION public.fn_set_updated_at() OWNER TO postgres;
-
 SET default_tablespace = '';
-
 SET default_table_access_method = heap;
 
 --
--- Name: attendance_records; Type: TABLE; Schema: public; Owner: postgres
+-- Tables
 --
 
 CREATE TABLE public.attendance_records (
@@ -227,13 +130,6 @@ CREATE TABLE public.attendance_records (
     CONSTRAINT chk_override CHECK ((((status = 'MANUAL_OVERRIDE'::public.attendance_status) AND (overridden_by IS NOT NULL) AND (override_reason IS NOT NULL)) OR (status <> 'MANUAL_OVERRIDE'::public.attendance_status)))
 );
 
-
-ALTER TABLE public.attendance_records OWNER TO postgres;
-
---
--- Name: audit_logs; Type: TABLE; Schema: public; Owner: postgres
---
-
 CREATE TABLE public.audit_logs (
     id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
     actor_id uuid,
@@ -246,13 +142,6 @@ CREATE TABLE public.audit_logs (
     user_agent character varying(255),
     created_at timestamp with time zone DEFAULT now() NOT NULL
 );
-
-
-ALTER TABLE public.audit_logs OWNER TO postgres;
-
---
--- Name: benchmark_results; Type: TABLE; Schema: public; Owner: postgres
---
 
 CREATE TABLE public.benchmark_results (
     id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
@@ -289,26 +178,12 @@ CREATE TABLE public.benchmark_results (
     CONSTRAINT benchmark_results_threshold_check CHECK (((threshold >= (0)::double precision) AND (threshold <= (1)::double precision)))
 );
 
-
-ALTER TABLE public.benchmark_results OWNER TO postgres;
-
---
--- Name: class_enrollments; Type: TABLE; Schema: public; Owner: postgres
---
-
 CREATE TABLE public.class_enrollments (
     id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
     student_id uuid NOT NULL,
     class_id uuid NOT NULL,
     enrolled_at timestamp with time zone DEFAULT now() NOT NULL
 );
-
-
-ALTER TABLE public.class_enrollments OWNER TO postgres;
-
---
--- Name: class_sessions; Type: TABLE; Schema: public; Owner: postgres
---
 
 CREATE TABLE public.class_sessions (
     id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
@@ -319,13 +194,6 @@ CREATE TABLE public.class_sessions (
     notes text,
     CONSTRAINT chk_class_session_time CHECK (((ended_at IS NULL) OR (ended_at > started_at)))
 );
-
-
-ALTER TABLE public.class_sessions OWNER TO postgres;
-
---
--- Name: classes; Type: TABLE; Schema: public; Owner: postgres
---
 
 CREATE TABLE public.classes (
     id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
@@ -340,13 +208,6 @@ CREATE TABLE public.classes (
     CONSTRAINT classes_term_check CHECK (((term >= 1) AND (term <= 3)))
 );
 
-
-ALTER TABLE public.classes OWNER TO postgres;
-
---
--- Name: face_embeddings; Type: TABLE; Schema: public; Owner: postgres
---
-
 CREATE TABLE public.face_embeddings (
     id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
     student_id uuid NOT NULL,
@@ -359,13 +220,6 @@ CREATE TABLE public.face_embeddings (
     updated_at timestamp with time zone DEFAULT now() NOT NULL
 );
 
-
-ALTER TABLE public.face_embeddings OWNER TO postgres;
-
---
--- Name: students; Type: TABLE; Schema: public; Owner: postgres
---
-
 CREATE TABLE public.students (
     id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
     research_id character varying(20) NOT NULL,
@@ -375,13 +229,6 @@ CREATE TABLE public.students (
     student_code character varying(20),
     email character varying(100)
 );
-
-
-ALTER TABLE public.students OWNER TO postgres;
-
---
--- Name: user_sessions; Type: TABLE; Schema: public; Owner: postgres
---
 
 CREATE TABLE public.user_sessions (
     id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
@@ -394,13 +241,6 @@ CREATE TABLE public.user_sessions (
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     last_used_at timestamp with time zone DEFAULT now() NOT NULL
 );
-
-
-ALTER TABLE public.user_sessions OWNER TO postgres;
-
---
--- Name: users; Type: TABLE; Schema: public; Owner: postgres
---
 
 CREATE TABLE public.users (
     id uuid DEFAULT public.uuid_generate_v4() NOT NULL,
@@ -415,384 +255,134 @@ CREATE TABLE public.users (
     updated_at timestamp with time zone DEFAULT now() NOT NULL
 );
 
-
-ALTER TABLE public.users OWNER TO postgres;
-
 --
--- Name: attendance_records attendance_records_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+-- Primary keys / unique constraints
 --
 
 ALTER TABLE ONLY public.attendance_records
     ADD CONSTRAINT attendance_records_pkey PRIMARY KEY (id);
 
-
---
--- Name: attendance_records attendance_records_session_id_student_id_key; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
 ALTER TABLE ONLY public.attendance_records
     ADD CONSTRAINT attendance_records_session_id_student_id_key UNIQUE (session_id, student_id);
-
-
---
--- Name: audit_logs audit_logs_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
 
 ALTER TABLE ONLY public.audit_logs
     ADD CONSTRAINT audit_logs_pkey PRIMARY KEY (id);
 
-
---
--- Name: benchmark_results benchmark_results_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
 ALTER TABLE ONLY public.benchmark_results
     ADD CONSTRAINT benchmark_results_pkey PRIMARY KEY (id);
-
-
---
--- Name: class_enrollments class_enrollments_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
 
 ALTER TABLE ONLY public.class_enrollments
     ADD CONSTRAINT class_enrollments_pkey PRIMARY KEY (id);
 
-
---
--- Name: class_enrollments class_enrollments_student_id_class_id_key; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
 ALTER TABLE ONLY public.class_enrollments
     ADD CONSTRAINT class_enrollments_student_id_class_id_key UNIQUE (student_id, class_id);
-
-
---
--- Name: class_sessions class_sessions_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
 
 ALTER TABLE ONLY public.class_sessions
     ADD CONSTRAINT class_sessions_pkey PRIMARY KEY (id);
 
-
---
--- Name: classes classes_class_code_key; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
 ALTER TABLE ONLY public.classes
     ADD CONSTRAINT classes_class_code_key UNIQUE (class_code);
-
-
---
--- Name: classes classes_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
 
 ALTER TABLE ONLY public.classes
     ADD CONSTRAINT classes_pkey PRIMARY KEY (id);
 
-
---
--- Name: face_embeddings face_embeddings_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
 ALTER TABLE ONLY public.face_embeddings
     ADD CONSTRAINT face_embeddings_pkey PRIMARY KEY (id);
-
-
---
--- Name: students students_email_key; Type: CONSTRAINT; Schema: public; Owner: postgres
---
 
 ALTER TABLE ONLY public.students
     ADD CONSTRAINT students_email_key UNIQUE (email);
 
-
---
--- Name: students students_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
 ALTER TABLE ONLY public.students
     ADD CONSTRAINT students_pkey PRIMARY KEY (id);
-
-
---
--- Name: students students_research_id_key; Type: CONSTRAINT; Schema: public; Owner: postgres
---
 
 ALTER TABLE ONLY public.students
     ADD CONSTRAINT students_research_id_key UNIQUE (research_id);
 
-
---
--- Name: students students_student_code_key; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
 ALTER TABLE ONLY public.students
     ADD CONSTRAINT students_student_code_key UNIQUE (student_code);
-
-
---
--- Name: user_sessions user_sessions_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
 
 ALTER TABLE ONLY public.user_sessions
     ADD CONSTRAINT user_sessions_pkey PRIMARY KEY (id);
 
-
---
--- Name: users users_email_key; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
 ALTER TABLE ONLY public.users
     ADD CONSTRAINT users_email_key UNIQUE (email);
-
-
---
--- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
---
 
 ALTER TABLE ONLY public.users
     ADD CONSTRAINT users_pkey PRIMARY KEY (id);
 
-
---
--- Name: users users_username_key; Type: CONSTRAINT; Schema: public; Owner: postgres
---
-
 ALTER TABLE ONLY public.users
     ADD CONSTRAINT users_username_key UNIQUE (username);
 
-
 --
--- Name: idx_attendance_session; Type: INDEX; Schema: public; Owner: postgres
+-- Indexes
 --
 
 CREATE INDEX idx_attendance_session ON public.attendance_records USING btree (session_id);
-
-
---
--- Name: idx_attendance_status; Type: INDEX; Schema: public; Owner: postgres
---
-
 CREATE INDEX idx_attendance_status ON public.attendance_records USING btree (status);
-
-
---
--- Name: idx_attendance_student; Type: INDEX; Schema: public; Owner: postgres
---
-
 CREATE INDEX idx_attendance_student ON public.attendance_records USING btree (student_id);
-
-
---
--- Name: idx_audit_actor; Type: INDEX; Schema: public; Owner: postgres
---
-
 CREATE INDEX idx_audit_actor ON public.audit_logs USING btree (actor_id);
-
-
---
--- Name: idx_audit_created_at; Type: INDEX; Schema: public; Owner: postgres
---
-
 CREATE INDEX idx_audit_created_at ON public.audit_logs USING btree (created_at DESC);
-
-
---
--- Name: idx_audit_target; Type: INDEX; Schema: public; Owner: postgres
---
-
 CREATE INDEX idx_audit_target ON public.audit_logs USING btree (target_table, target_id);
-
-
---
--- Name: idx_benchmark_model_scenario; Type: INDEX; Schema: public; Owner: postgres
---
-
 CREATE INDEX idx_benchmark_model_scenario ON public.benchmark_results USING btree (model_name, scenario);
-
-
---
--- Name: idx_class_sessions_class; Type: INDEX; Schema: public; Owner: postgres
---
-
 CREATE INDEX idx_class_sessions_class ON public.class_sessions USING btree (class_id);
-
-
---
--- Name: idx_class_sessions_created; Type: INDEX; Schema: public; Owner: postgres
---
-
 CREATE INDEX idx_class_sessions_created ON public.class_sessions USING btree (created_by);
-
-
---
--- Name: idx_classes_lecturer; Type: INDEX; Schema: public; Owner: postgres
---
-
 CREATE INDEX idx_classes_lecturer ON public.classes USING btree (lecturer_id);
-
-
---
--- Name: idx_embeddings_active_student; Type: INDEX; Schema: public; Owner: postgres
---
-
 CREATE UNIQUE INDEX idx_embeddings_active_student ON public.face_embeddings USING btree (student_id) WHERE (is_valid = true);
-
-
---
--- Name: idx_enrollments_class; Type: INDEX; Schema: public; Owner: postgres
---
-
 CREATE INDEX idx_enrollments_class ON public.class_enrollments USING btree (class_id);
-
-
---
--- Name: idx_enrollments_student; Type: INDEX; Schema: public; Owner: postgres
---
-
 CREATE INDEX idx_enrollments_student ON public.class_enrollments USING btree (student_id);
-
-
---
--- Name: idx_user_sessions_expires; Type: INDEX; Schema: public; Owner: postgres
---
-
 CREATE INDEX idx_user_sessions_expires ON public.user_sessions USING btree (expires_at);
-
-
---
--- Name: idx_user_sessions_user; Type: INDEX; Schema: public; Owner: postgres
---
-
 CREATE INDEX idx_user_sessions_user ON public.user_sessions USING btree (user_id);
 
-
 --
--- Name: face_embeddings trg_embeddings_updated_at; Type: TRIGGER; Schema: public; Owner: postgres
+-- Triggers
 --
 
 CREATE TRIGGER trg_embeddings_updated_at BEFORE UPDATE ON public.face_embeddings FOR EACH ROW EXECUTE FUNCTION public.fn_set_updated_at();
-
-
---
--- Name: users trg_users_updated_at; Type: TRIGGER; Schema: public; Owner: postgres
---
-
 CREATE TRIGGER trg_users_updated_at BEFORE UPDATE ON public.users FOR EACH ROW EXECUTE FUNCTION public.fn_set_updated_at();
 
-
 --
--- Name: attendance_records attendance_records_overridden_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Foreign keys
 --
 
 ALTER TABLE ONLY public.attendance_records
     ADD CONSTRAINT attendance_records_overridden_by_fkey FOREIGN KEY (overridden_by) REFERENCES public.users(id);
 
-
---
--- Name: attendance_records attendance_records_session_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
 ALTER TABLE ONLY public.attendance_records
     ADD CONSTRAINT attendance_records_session_id_fkey FOREIGN KEY (session_id) REFERENCES public.class_sessions(id) ON DELETE RESTRICT;
-
-
---
--- Name: attendance_records attendance_records_student_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
 
 ALTER TABLE ONLY public.attendance_records
     ADD CONSTRAINT attendance_records_student_id_fkey FOREIGN KEY (student_id) REFERENCES public.students(id) ON DELETE RESTRICT;
 
-
---
--- Name: audit_logs audit_logs_actor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
 ALTER TABLE ONLY public.audit_logs
     ADD CONSTRAINT audit_logs_actor_id_fkey FOREIGN KEY (actor_id) REFERENCES public.users(id) ON DELETE SET NULL;
-
-
---
--- Name: benchmark_results benchmark_results_session_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
 
 ALTER TABLE ONLY public.benchmark_results
     ADD CONSTRAINT benchmark_results_session_id_fkey FOREIGN KEY (session_id) REFERENCES public.class_sessions(id) ON DELETE SET NULL;
 
-
---
--- Name: class_enrollments class_enrollments_class_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
 ALTER TABLE ONLY public.class_enrollments
     ADD CONSTRAINT class_enrollments_class_id_fkey FOREIGN KEY (class_id) REFERENCES public.classes(id) ON DELETE RESTRICT;
-
-
---
--- Name: class_enrollments class_enrollments_student_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
 
 ALTER TABLE ONLY public.class_enrollments
     ADD CONSTRAINT class_enrollments_student_id_fkey FOREIGN KEY (student_id) REFERENCES public.students(id) ON DELETE RESTRICT;
 
-
---
--- Name: class_sessions class_sessions_class_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
 ALTER TABLE ONLY public.class_sessions
     ADD CONSTRAINT class_sessions_class_id_fkey FOREIGN KEY (class_id) REFERENCES public.classes(id) ON DELETE RESTRICT;
-
-
---
--- Name: class_sessions class_sessions_created_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
 
 ALTER TABLE ONLY public.class_sessions
     ADD CONSTRAINT class_sessions_created_by_fkey FOREIGN KEY (created_by) REFERENCES public.users(id) ON DELETE RESTRICT;
 
-
---
--- Name: classes classes_lecturer_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
 ALTER TABLE ONLY public.classes
     ADD CONSTRAINT classes_lecturer_id_fkey FOREIGN KEY (lecturer_id) REFERENCES public.users(id) ON DELETE RESTRICT;
-
-
---
--- Name: face_embeddings face_embeddings_created_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
 
 ALTER TABLE ONLY public.face_embeddings
     ADD CONSTRAINT face_embeddings_created_by_fkey FOREIGN KEY (created_by) REFERENCES public.users(id) ON DELETE RESTRICT;
 
-
---
--- Name: face_embeddings face_embeddings_student_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
 ALTER TABLE ONLY public.face_embeddings
     ADD CONSTRAINT face_embeddings_student_id_fkey FOREIGN KEY (student_id) REFERENCES public.students(id) ON DELETE CASCADE;
-
-
---
--- Name: user_sessions user_sessions_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
 
 ALTER TABLE ONLY public.user_sessions
     ADD CONSTRAINT user_sessions_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
 
-
---
--- Name: SCHEMA public; Type: ACL; Schema: -; Owner: postgres
---
-
-REVOKE USAGE ON SCHEMA public FROM PUBLIC;
-
-
 --
 -- PostgreSQL database dump complete
 --
-
