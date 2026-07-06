@@ -22,6 +22,7 @@ spring:
   sql:
     init:
       mode: always
+      separator: "$$"
       schema-locations: classpath:schema.sql
       data-locations: classpath:seed.sql
 server:
