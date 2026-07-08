@@ -83,6 +83,7 @@ public class InternalController {
                 .embedding(encryptionUtil.decrypt(embedding.getEmbedding()))
                 .modelName(embedding.getModelName().name())
                 .embeddingDim(embedding.getEmbeddingDim())
+                .imagePath(embedding.getImagePath())
                 .build());
     }
 
@@ -98,6 +99,7 @@ public class InternalController {
                         .embedding(encryptionUtil.decrypt(e.getEmbedding()))
                         .modelName(e.getModelName().name())
                         .embeddingDim(e.getEmbeddingDim())
+                        .imagePath(e.getImagePath())
                         .build())
                 .toList();
 

@@ -19,4 +19,6 @@ public class FaceEmbeddingRequest {
 
     @NotNull
     private Short embeddingDim;
+
+    private String imageBase64;
 }

@@ -164,6 +164,7 @@ CREATE TABLE IF NOT EXISTS public.face_embeddings (
     embedding_dim smallint NOT NULL,
     is_valid boolean DEFAULT true NOT NULL,
     created_by uuid NOT NULL,
+    image_path character varying(500),
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL
 );

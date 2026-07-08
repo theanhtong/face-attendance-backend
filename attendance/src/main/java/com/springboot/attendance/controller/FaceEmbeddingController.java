@@ -39,4 +39,14 @@ public class FaceEmbeddingController {
         embeddingService.invalidate(studentId);
         return ResponseEntity.ok(Map.of("message", "Embedding invalidated"));
     }
+
+    @GetMapping("/{id}/image")
+    @PreAuthorize("hasAnyRole('ADMIN', 'LECTURER')")
+    public ResponseEntity<byte[]> getFaceImage(@PathVariable UUID id) {
+        byte[] imageBytes = embeddingService.downloadImage(id);
+        String contentType = embeddingService.getContentType(id);
+        return ResponseEntity.ok()
+                .contentType(org.springframework.http.MediaType.parseMediaType(contentType))
+                .body(imageBytes);
+    }
 }

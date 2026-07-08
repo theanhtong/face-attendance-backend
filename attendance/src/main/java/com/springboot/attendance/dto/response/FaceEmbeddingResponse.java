@@ -15,6 +15,7 @@ public class FaceEmbeddingResponse {
     private String modelName;
     private Short embeddingDim;
     private boolean isValid;
+    private String imagePath;
     private UUID createdById;
     private String createdByName;
     private OffsetDateTime createdAt;

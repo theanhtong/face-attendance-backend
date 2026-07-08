@@ -27,6 +27,7 @@ public class FaceEmbeddingService {
     private final UserRepository userRepository;
     private final AuditLogService auditLogService;
     private final AesEncryptionUtil encryptionUtil;
+    private final MinioService minioService;
 
     @Transactional(readOnly = true)
     public FaceEmbeddingResponse getByStudent(UUID studentId) {
@@ -58,11 +59,19 @@ public class FaceEmbeddingService {
 
         byte[] encryptedEmbedding = encryptionUtil.encrypt(req.getEmbedding());
 
+        UUID embeddingId = UUID.randomUUID();
+        String imagePath = null;
+        if (req.getImageBase64() != null && !req.getImageBase64().isBlank()) {
+            imagePath = minioService.uploadFaceImage(student.getId(), embeddingId, req.getImageBase64());
+        }
+
         var saved = embeddingRepository.save(FaceEmbedding.builder()
+                .id(embeddingId)
                 .student(student)
                 .embedding(encryptedEmbedding)
                 .modelName(modelName)
                 .embeddingDim(req.getEmbeddingDim())
+                .imagePath(imagePath)
                 .createdBy(createdBy)
                 .build());
 
@@ -110,10 +119,33 @@ public class FaceEmbeddingService {
                 .modelName(e.getModelName().name())
                 .embeddingDim(e.getEmbeddingDim())
                 .isValid(e.isValid())
+                .imagePath(e.getImagePath())
                 .createdById(e.getCreatedBy().getId())
                 .createdByName(e.getCreatedBy().getFullName())
                 .createdAt(e.getCreatedAt())
                 .updatedAt(e.getUpdatedAt())
                 .build();
+    }
+
+    @Transactional(readOnly = true)
+    public byte[] downloadImage(UUID embeddingId) {
+        var entity = embeddingRepository.findById(embeddingId)
+                .orElseThrow(() -> new EntityNotFoundException("Embedding not found: " + embeddingId));
+        if (entity.getImagePath() == null || entity.getImagePath().isBlank()) {
+            throw new EntityNotFoundException("No image stored for embedding: " + embeddingId);
+        }
+        return minioService.downloadFaceImage(entity.getImagePath());
+    }
+
+    @Transactional(readOnly = true)
+    public String getContentType(UUID embeddingId) {
+        var entity = embeddingRepository.findById(embeddingId)
+                .orElseThrow(() -> new EntityNotFoundException("Embedding not found: " + embeddingId));
+        String path = entity.getImagePath();
+        if (path == null) return "image/jpeg";
+        if (path.endsWith(".png")) return "image/png";
+        if (path.endsWith(".webp")) return "image/webp";
+        if (path.endsWith(".gif")) return "image/gif";
+        return "image/jpeg";
     }
 }

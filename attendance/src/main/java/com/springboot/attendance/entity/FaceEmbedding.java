@@ -42,6 +42,9 @@ public class FaceEmbedding {
     @JoinColumn(name = "created_by", nullable = false)
     private User createdBy;
 
+    @Column(name = "image_path", length = 500)
+    private String imagePath;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;

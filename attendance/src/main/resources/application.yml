@@ -21,7 +21,7 @@ spring:
         format_sql: true
   sql:
     init:
-      mode: always
+      mode: never
       separator: "$$"
       schema-locations: classpath:schema.sql
       data-locations: classpath:seed.sql
@@ -35,6 +35,11 @@ internal:
   api-key: ${INTERNAL_API_KEY:your-secret-key-change-this-in-production}
 encryption:
   secret-key: ${ENCRYPTION_SECRET_KEY:KOD+A70PEgZTYqPGuCNOSMbx8nVYYoBZLEAH1ZGXwiY=}
+minio:
+  url: ${MINIO_URL:http://localhost:9000}
+  access-key: ${MINIO_ACCESS_KEY:minioadmin}
+  secret-key: ${MINIO_SECRET_KEY:minioadminpassword}
+  bucket-name: ${MINIO_BUCKET_NAME:face-images}
 springdoc:
   api-docs:
     path: /api-docs

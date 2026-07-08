@@ -12,4 +12,5 @@ public class InternalEmbeddingResponse {
     private byte[] embedding;
     private String modelName;
     private Short embeddingDim;
+    private String imagePath;
 }
